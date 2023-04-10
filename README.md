@@ -246,3 +246,194 @@ class Main
     }
 }
 ```
+
+
+## Class Problem
+
+Given a weighted directed acyclic graph (DAG) and a source vertex, find the shortest path’s cost from the source vertex to all other vertices present in the graph. If the vertex can’t be reached from the given source vertex, return its distance as infinity.
+
+For example, consider the following DAG:
+
+
+![Graph](images/BF8.png)
+
+The shortest distance of source vertex 7 to every other vertex is:
+```
+dist(7, 0) =  6 (7 —> 0)
+dist(7, 1) = -2 (7 —> 5 —> 1)
+dist(7, 2) = -6 (7 —> 5 —> 1 —> 2)
+dist(7, 3) =  4 (7 —> 3)
+dist(7, 4) = -1 (7 —> 5 —> 1 —> 4)
+dist(7, 5) = -4 (7 —> 5)
+dist(7, 6) =  6 (7 —> 5 —> 1 —> 6)
+```
+
+We know that a Topological sort of a directed acyclic graph is a linear ordering of its vertices such that for every directed edge uv from vertex u to vertex v, u comes before v in the ordering.
+
+![Graph](images/BF9.png)
+
+We can use a topological sort to solve this problem. When we consider a vertex u in topological order, it is guaranteed that we have considered every incoming edge to it. 
+
+Now for each vertex v of the DAG in the topological order, we relax the cost of its outgoing edges (update the shortest path information). 
+
+In order words, since we have already found the shortest path to vertex v, we can use that info to update the shortest path of all its adjacent vertices, i.e.,
+
+```
+for each vertex u in topological order
+    for each edge (u, v) with weight w
+        if (distance[u] + w < distance[v])
+            distance[v] = distance[u] + w
+```
+
+### Answer
+
+```java
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+ 
+// A class to store a graph edge
+class Edge
+{
+    int source, dest, weight;
+ 
+    public Edge(int source, int dest, int weight)
+    {
+        this.source = source;
+        this.dest = dest;
+        this.weight = weight;
+    }
+}
+ 
+// A class to represent a graph object
+class Graph
+{
+    // A list of lists to represent an adjacency list
+    List<List<Edge>> adjList = null;
+ 
+    // Constructor
+    Graph(List<Edge> edges, int n)
+    {
+        adjList = new ArrayList<>();
+ 
+        for (int i = 0; i < n; i++) {
+            adjList.add(new ArrayList<>());
+        }
+ 
+        // add edges to the directed graph
+        for (Edge edge: edges) {
+            adjList.get(edge.source).add(edge);
+        }
+    }
+}
+ 
+class Main
+{
+    // Perform DFS on the graph and set the departure time of all
+    // vertices of the graph
+    private static int DFS(Graph graph, int v, boolean[] discovered,
+                           int[] departure, int time)
+    {
+        // mark the current node as discovered
+        discovered[v] = true;
+ 
+        // set arrival time – not needed
+        // time++;
+ 
+        // do for every edge (v, u)
+        for (Edge edge: graph.adjList.get(v))
+        {
+            int u = edge.dest;
+ 
+            // if `u` is not yet discovered
+            if (!discovered[u]) {
+                time = DFS(graph, u, discovered, departure, time);
+            }
+        }
+ 
+        // ready to backtrack
+        // set departure time of vertex `v`
+        departure[time] = v;
+        time++;
+ 
+        return time;
+    }
+ 
+    // The function performs the topological sort on a given DAG and then finds
+    // the longest distance of all vertices from a given source by running one pass
+    // of the Bellman–Ford algorithm on edges or vertices in topological order
+    public static void findShortestDistance(Graph graph, int source, int n)
+    {
+        // departure[] stores the vertex number using departure time as an index
+        int[] departure = new int[n];
+        Arrays.fill(departure, -1);
+ 
+        // to keep track of whether a vertex is discovered or not
+        boolean[] discovered = new boolean[n];
+        int time = 0;
+ 
+        // perform DFS on all undiscovered vertices
+        for (int i = 0; i < n; i++)
+        {
+            if (!discovered[i]) {
+                time = DFS(graph, i, discovered, departure, time);
+            }
+        }
+ 
+        int[] cost = new int[n];
+        Arrays.fill(cost, Integer.MAX_VALUE);
+ 
+        cost[source] = 0;
+ 
+        // Process the vertices in topological order, i.e., in order
+        // of their decreasing departure time in DFS
+        for (int i = n - 1; i >= 0; i--)
+        {
+            // for each vertex in topological order,
+            // relax the cost of its adjacent vertices
+            int v = departure[i];
+            for (Edge e: graph.adjList.get(v))
+            {
+                // edge `e` from `v` to `u` having weight `w`
+                int u = e.dest;
+                int w = e.weight;
+ 
+                // if the distance to destination `u` can be shortened by
+                // taking edge (v, u), update cost to the new lower value
+                if (cost[v] != Integer.MAX_VALUE && cost[v] + w < cost[u]) {
+                    cost[u] = cost[v] + w;
+                }
+            }
+        }
+ 
+        // print shortest paths
+        for (int i = 0; i < n; i++) {
+            System.out.printf("dist(%d, %d) = %2d\n", source, i, cost[i]);
+        }
+    }
+ 
+    public static void main(String[] args)
+    {
+        // List of graph edges as per the above diagram
+        List<Edge> edges = Arrays.asList(
+                new Edge(0, 6, 2), new Edge(1, 2, -4), new Edge(1, 4, 1),
+                new Edge(1, 6, 8), new Edge(3, 0, 3), new Edge(3, 4, 5),
+                new Edge(5, 1, 2), new Edge(7, 0, 6), new Edge(7, 1, -1),
+                new Edge(7, 3, 4), new Edge(7, 5, -4)
+        );
+ 
+        // total number of nodes in the graph (labelled from 0 to 7)
+        int n = 8;
+ 
+        // build a graph from the given edges
+        Graph graph = new Graph(edges, n);
+ 
+        // source vertex
+        int source = 7;
+ 
+        // find the shortest distance of all vertices from the given source
+        findShortestDistance(graph, source, n);
+    }
+}
+```
