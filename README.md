@@ -12,9 +12,9 @@ It is slower than Dijkstra's algorithm for the same problem, but more versatile,
 
 * Given a weighted graph, G = (V,E), and a distinguished vertex, s, find the shortest weighted path from s to every other vertex in G.
 
-The Problem (adaptation for the Dikstra’s Algorithm): 
+The Problem (adaptation for the Djikstra’s Algorithm): 
 
-* Given a digraph with non-negative edge weights, G=(V,E), and a distinguished source vertex s in V. 
+* Given a digraph with non-negative edge weights, G=(V,E), and a distinguished source vertex <b>s</b> in V. 
 * Determine the distance and a shortest path (SP) from the source vertex to every vertex in the digraph.
 
 Bellman-Ford algorithm: more general than Dijkstra’s algorithm for shortest path problem: 
@@ -79,7 +79,10 @@ if d[v] > d[u] + w(u,v) then
 The input graph can have negative-weight edges.  
 
 ```text
+// Initialize the values
 Initialize(G, s);
+
+// Run the relaxation algorithm
 for i = 1 to |V| –1 
 {
 	for each (u,v) in E 
@@ -88,7 +91,7 @@ for i = 1 to |V| –1
     }
 };
 
-//Detects the existence of negative-weight cycle(s) reachable from s.
+//Detect the existence of negative-weight cycle(s) reachable from s.
 
 for each (u,v) in E 
 { 
@@ -115,11 +118,15 @@ Complexity: - O(\|V\|\|E\|)
 ![Graph](images/BF7.png)
 
 Example:
+
 http://www.programming-algorithms.net/article/47389/Bellman-Ford-algorithm
+
 Visualization:
-     https://visualgo.net/en/sssp
+
+https://visualgo.net/en/sssp
 
 Java Implementation:
+
 http://algs4.cs.princeton.edu/44sp/BellmanFordSP.java.html
 
 ## Example:
